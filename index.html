@@ -8,20 +8,58 @@
 </head>
 
 <body>
-  <div id="demo"></div>
+  <table>
+    <tbody>
+      <tr>
+        <th><label for="Amount">Amount</label></th>
+        <th>From Currency</th>
+        <th>To Currency</th>
+        <th></th>
+      </tr>
+      <tr>
+        <td><input type="text" id="Amount"></td>
+        <td>
+          <select id="From">
+            <option value="USD">USD</option>
+            <option value="VND">VND</option>
+          </select>
+        </td>
+        <td>
+          <select id="To">
+            <option value="VND">VND</option>
+            <option value="USD">USD</option>
+          </select>
+        </td>
+        <td><button onclick="ChangeMoney()">Convert</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div id="Result">Result:</div>
   <script>
+    async function ChangeMoney() {
+      let amount = parseFloat(document.getElementById("Amount").value);
+      let from = document.getElementById("From").value;
+      let to = document.getElementById("To").value;
 
-    function loadDoc() {
-      const xhttp = new XMLHttpRequest();
-      xhttp.onload = function () {
-        console.log(this.responseText);
-        document.getElementById("demo").innerHTML = this.responseText;
+      // Lấy tỷ giá thật từ server proxy
+      const res = await fetch("http://localhost:3001/tygia");
+      const data = await res.json();
+
+      const rate = parseFloat(data.transfer.replace(/,/g, ''));
+
+      let result;
+
+      if (from === "USD" && to === "VND") {
+        result = "Result: " + (amount * rate).toLocaleString() + " ₫";
+      } else if (from === "VND" && to === "USD") {
+        result = "Result: " + (amount / rate).toFixed(2) + " $";
+      } else {
+        result = "Result: " + amount + (to === "VND" ? " ₫" : " $");
       }
-      xhttp.open("GET", "https://portal.vietcombank.com.vn/Usercontrols/TVPortal.TyGia/pXML.aspx", true);
-      xhttp.send();
-    }
 
-    loadDoc();
+      document.getElementById("Result").innerHTML = result;
+    }
   </script>
 </body>
 
